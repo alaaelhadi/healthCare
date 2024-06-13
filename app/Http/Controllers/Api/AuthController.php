@@ -9,95 +9,31 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreUserRequest;
+use App\Traits\File;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
     // use ApiResponseTrait;
-
-    // /**
-    //  * Register a User.
-    //  *
-    //  * @return \Illuminate\Http\JsonResponse
-    //  */
-    // public function register(Request $request) {
-    //     $validator = Validator::make($request->all(), [
-    //         'fullname' => 'required|string|between:2,100',
-    //         'email' => 'required|string|email|max:100|unique:users',
-    //         'password' => 'required|string|min:6',
-    //         'phone' => 'required|string|between:2,11',
-    //         'job' => 'required|string',
-    //         'job_other' => 'sometimes|string',
-    //         'country' => 'required|string'
-    //     ]);
-
-    //     if($validator->fails()){
-    //         return response()->json($validator->errors()->toJson(), 400);
-    //     }
-
-    //     $user = User::create(array_merge(
-    //         $validator->validated(),
-    //         ['password' => bcrypt($request->password)]
-    //     ));
-
-    //     return $this->apiResponse('User successfully registered', 200, $user);
-    // }
-
-    // /**
-    //  * Get a JWT via given credentials.
-    //  *
-    //  * @return \Illuminate\Http\JsonResponse
-    //  */
-    // public function login(Request $request){
-    // 	$validator = Validator::make($request->all(), [
-    //         'email' => 'required|email',
-    //         'password' => 'required|string|min:6',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json($validator->errors(), 422);
-    //     }
-
-    //     if (! $token = Auth::attempt($validator->validated())) {
-    //         return $this->apiResponse('Unauthorized', 401);
-            
-    //     }
-
-    //     return $this->createNewToken($token);
-    // }
-
-    // /**
-    //  * Log the user out (Invalidate the token).
-    //  *
-    //  * @return \Illuminate\Http\JsonResponse
-    //  */
-    // public function logout() {
-    //     auth()->logout();
-
-    //     return $this->apiResponse('User successfully signed out');
-    // }
-
-    // /**
-    //  * Get the token array structure.
-    //  *
-    //  * @param  string $token
-    //  *
-    //  * @return \Illuminate\Http\JsonResponse
-    //  */
-    // protected function createNewToken($token){
-    //     return response()->json([
-    //         'access_token' => $token,
-    //         'token_type' => 'bearer',
-    //         // 'expires_in' => Auth::factory()->getTTL() * 60,
-    //         'user' => auth()->user()
-    //     ]);
-    // }
-
-
+    use File;
 
     /**
-* @OA\Post(
+    * @OA\Post(
      *     path="/api/register",
      *     summary="Register a new user",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *         mediaType="multipart/form-data",
+     *     @OA\Schema(
+     *      @OA\Property(
+     *                    property="organization_logo",
+     *                    description="organization_logo",
+     *                    type="file",
+     *                   ),
+     *               ),
+     *           ),
+     *       ),
      *     @OA\Parameter(
      *         name="fullname",
      *         in="query",
@@ -113,32 +49,11 @@ class AuthController extends Controller
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
-     *         name="password",
-     *         in="query",
-     *         description="User's password",
-     *         required=true,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
      *         name="phone",
      *         in="query",
      *         description="User's phone",
      *         required=true,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="job",
-     *         in="query",
-     *         description="User's job",
-     *         required=true,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="job_other",
-     *         in="query",
-     *         description="User's job other",
-     *         required=false,
-     *         @OA\Schema(type="string")
+     *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Parameter(
      *         name="country",
@@ -153,6 +68,20 @@ class AuthController extends Controller
      *         description="User's country",
      *         required=false,
      *         @OA\Schema(type="string")
+     *     ),  
+     *     @OA\Parameter(
+     *         name="company",
+     *         in="query",
+     *         description="User's company",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="job_function",
+     *         in="query",
+     *         description="User's job",
+     *         required=true,
+     *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
      *         name="job_role",
@@ -162,53 +91,40 @@ class AuthController extends Controller
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Parameter(
-     *         name="job_role_other",
+     *         name="password",
      *         in="query",
-     *         description="User's job role other",
-     *         required=false,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="company",
-     *         in="query",
-     *         description="User's company",
-     *         required=false,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="organization_logo",
-     *         in="query",
-     *         description="User's organization logo",
-     *         required=false,
+     *         description="User's password",
+     *         required=true,
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(response="201", description="User registered successfully"),
      *     @OA\Response(response="422", description="Validation errors")
      * )
      */
-    public function register(Request $request)
+    public function register(StoreUserRequest $request)
     {
-        $validatedUser = $request->validate([
-            'fullname' => 'required|string|between:2,100',
-            'email' => 'required|string|email|max:100|unique:users',
-            'password' => 'required|string|min:6',
-            'phone' => 'required|string|max:13|unique:users',
-            'job' => 'required|string',
-            'job_other' => 'nullable|string',
-            'country' => 'required|string',
-            'city' => 'nullable|string',
-            'job_role' => 'nullable|string',
-            'job_role_other' => 'nullable|string',
-            'company' => 'nullable|string',
-            'organization_logo' => 'nullable|string'
-        ]);
-        $validatedUser['job_other'] = $request->filled('job_other') ? $request->job_other : '';
+        $validatedUser = $request->validated();
+        $validatedUser['password'] = Hash::make($request['password']);
         $validatedUser['city'] = $request->filled('city') ? $request->city : '';
         $validatedUser['job_role'] = $request->filled('job_role') ? $request->job_role : '';
-        $validatedUser['job_role_other'] = $request->filled('job_role_other') ? $request->job_role_other : '';
         $validatedUser['company'] = $request->filled('company') ? $request->company : '';
+
+        // UPLOAD IMAGE
+        $imagePath = null;
+        if ($request->hasFile('orgnization_logo')) {
+            $imagePath = $this->storeImage($request->file('orgnization_logo'));
+        }
+        $validatedUser['orgnization_logo'] = $imagePath; // Set the image path if uploaded
+
         User::create($validatedUser);
         return response()->json(['message' => 'User registered successfully'], 201);
+    }
+
+    private function storeImage($file)
+    {
+        $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('public/assets/organizationImages', $fileName); // Store in public/user-images
+        return asset('storage/' . $path); // Return the public URL for the image
     }
 
     /**

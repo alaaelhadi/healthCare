@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Contracts\Validation\Validator;
 
 class StoreUserRequest extends FormRequest
 {
@@ -11,7 +13,7 @@ class StoreUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,19 +24,33 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'organization_logo' => 'sometimes|mimes:png,jpg,jpeg|max:2048',
             'fullname' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
-            'password' => 'required|string|min:6',
             'phone' => 'required|string|max:13|unique:users',
-            'job' => 'required|string',
-            'job_other' => 'nullable|string',
             'country' => 'required|string',
-            'city' => 'nullable|string',
-            'job_role' => 'nullable|string',
-            'job_role_other' => 'nullable|string',
-            'company' => 'nullable|string',
-            'organization_logo' => 'nullable|string'
+            'city' => 'sometimes|string',
+            'company' => 'sometimes|string',
+            'job_function' => 'required|string',    
+            'job_role' => 'sometimes|string',
+            'password' => 'required|string|min:8' 
         ];
+    }
+
+    public function failedValidation(Validator $validator)
+
+    {
+
+        throw new HttpResponseException(response()->json([
+
+            'success'   => false,
+
+            'message'   => 'Validation errors',
+
+            'data'      => $validator->errors()
+
+        ]));
+
     }
 
     public function messages(){

@@ -2,6 +2,16 @@
     "openapi": "3.0.0",
     "info": {
         "title": "HealthCare",
+        "description": "Description removed for better illustration of structure.",
+        "contact": {
+            "name": "company",
+            "url": "https://example.test",
+            "email": "admin@example.test"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
         "version": "1.0.0"
     },
     "paths": {
@@ -29,39 +39,12 @@
                         }
                     },
                     {
-                        "name": "password",
-                        "in": "query",
-                        "description": "User's password",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
                         "name": "phone",
                         "in": "query",
                         "description": "User's phone",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "job",
-                        "in": "query",
-                        "description": "User's job",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "job_other",
-                        "in": "query",
-                        "description": "User's job other",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     },
                     {
@@ -83,24 +66,6 @@
                         }
                     },
                     {
-                        "name": "job_role",
-                        "in": "query",
-                        "description": "User's job role",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "job_role_other",
-                        "in": "query",
-                        "description": "User's job role other",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
                         "name": "company",
                         "in": "query",
                         "description": "User's company",
@@ -110,15 +75,49 @@
                         }
                     },
                     {
-                        "name": "organization_logo",
+                        "name": "job_function",
                         "in": "query",
-                        "description": "User's organization logo",
+                        "description": "User's job",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "job_role",
+                        "in": "query",
+                        "description": "User's job role",
                         "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "password",
+                        "in": "query",
+                        "description": "User's password",
+                        "required": true,
                         "schema": {
                             "type": "string"
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "organization_logo": {
+                                        "description": "organization_logo",
+                                        "type": "file"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "201": {
                         "description": "User registered successfully"
