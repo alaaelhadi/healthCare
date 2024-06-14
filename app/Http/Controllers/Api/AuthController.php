@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreUserRequest;
 use App\Traits\File;
 use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class AuthController extends Controller
 {
@@ -109,12 +110,18 @@ class AuthController extends Controller
         $validatedUser['job_role'] = $request->filled('job_role') ? $request->job_role : '';
         $validatedUser['company'] = $request->filled('company') ? $request->company : '';
 
-        // UPLOAD IMAGE
-        $imagePath = null;
-        if ($request->hasFile('orgnization_logo')) {
-            $imagePath = $this->storeImage($request->file('orgnization_logo'));
-        }
-        $validatedUser['orgnization_logo'] = $imagePath; // Set the image path if uploaded
+        // // UPLOAD IMAGE
+        // $imagePath = null;
+        // if ($request->hasFile('orgnization_logo')) {
+        //     $imagePath = $this->storeImage($request->file('orgnization_logo'));
+        // }
+        // $validatedUser['orgnization_logo'] = $imagePath; // Set the image path if uploaded
+
+        $cloudinaryImage = $request->file('organization_logo')->storeOnCloudinary('users');
+        $url = $cloudinaryImage->getSecurePath();
+        $public_id = $cloudinaryImage->getPublicId();
+        $validatedUser['organization_logo_url'] = $url;
+        $validatedUser['organization_logo_public_id'] = $public_id;
 
         User::create($validatedUser);
         return response()->json(['message' => 'User registered successfully'], 201);
