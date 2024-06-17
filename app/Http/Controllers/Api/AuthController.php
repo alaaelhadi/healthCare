@@ -11,11 +11,18 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreUserRequest;
 use App\Traits\File;
 use Illuminate\Support\Facades\Storage;
+use JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
     // use ApiResponseTrait;
     use File;
+
+    public function __construct()
+    {
+        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+    }
 
     /**
     * @OA\Post(
@@ -149,27 +156,102 @@ class AuthController extends Controller
      *     @OA\Response(response="401", description="Invalid credentials")
      * )
      */
-    public function login(StoreUserRequest $request)
+    public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
-        if (Auth::attempt($credentials)) {
-                    $token = Auth::user()->createToken('api_token')->plainTextToken;
-                    return response()->json(['token' => $token], 200);
-                }
-        return response()->json(['error' => 'Invalid credentials'], 401);
+        // $this->validate($request, [
+        //     'email' => 'required|email',
+        //     'password' => 'required'
+        // ]);
+
+        // $credentials = $request->only('email', 'password');
+        // if (Auth::attempt($credentials)) {
+        //     $token = Auth::user()->createToken('api_token')->plainTextToken;
+        //     return response()->json(['token' => $token], 200);
+        // }
+        // return response()->json(['error' => 'Invalid credentials'], 401);
+        $credentials = request(['email', 'password']);
+        if (! $token = auth()->attempt($credentials)) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+        
+
+        return $this->respondWithToken($token);
     }
 
     /**
-     * @OA\Get(
+     * @OA\Post(
      *     path="/api/user",
      *     summary="Get logged-in user details",
+     *      @OA\Parameter(
+     *         name="token",
+     *         in="query",
+     *         description="User's token",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
      *     @OA\Response(response="200", description="Success"),
      *     security={{"bearerAuth":{}}}
      * )
      */
-    public function getUserDetails(StoreUserRequest $request)
+    public function getUserDetails(Request $request)
     {
         $user = $request->user();
         return response()->json(['user' => $user], 200);
+    }
+
+    /**
+    * @OA\Post(
+    *     path="/api/refresh",
+    *     @OA\Response(response="200", description="Display a credential User."),
+    *     @OA\Response(response="201", description="Successful operation"),
+    *     @OA\Response(response="400", description="Bad Request"),
+    *     @OA\Response(response="401", description="Unauthenticated"),
+    *     @OA\Response(response="403", description="Forbidden")
+    * )
+    */
+    public function refresh()
+    {
+        return $this->respondWithToken(Auth::refresh());
+    }
+
+    /**
+    * @OA\Post(
+    *     path="/api/logout",
+    * @OA\Parameter(
+     *         name="token",
+     *         in="query",
+     *         description="User's token",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+    *     @OA\Response(response="200", description="Display a credential User."),
+    *     @OA\Response(response="201", description="Successful operation"),
+    *     @OA\Response(response="400", description="Bad Request"),
+    *     @OA\Response(response="401", description="Unauthenticated"),
+    *     @OA\Response(response="403", description="Forbidden")
+    * )
+    */
+    public function logout()
+    {
+        auth()->logout();
+
+        return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    /**
+     * Get the token array structure.
+     *
+     * @param  string $token
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function respondWithToken($token)
+    {
+        return response()->json([
+            'access' => $token,
+            'refresh' => Auth::refresh(),
+            'token_type' => 'bearer',
+            'expires_in' => Auth::factory()->getTTL() * 60
+        ]);
     }
 }
