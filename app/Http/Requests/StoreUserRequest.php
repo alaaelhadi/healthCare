@@ -24,7 +24,9 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'organization_logo' => 'sometimes|mimes:png,jpg,jpeg|max:2048',
+            'organization_logo' => 'sometimes|image|mimes:png,jpg,jpeg|max:2048',
+            'organization_logo_url' => 'sometimes',
+            'organization_logo_public_id' => 'sometimes',
             'fullname' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
             'phone' => 'required|string|max:13|unique:users',
