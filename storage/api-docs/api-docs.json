@@ -163,9 +163,20 @@
             }
         },
         "/api/user": {
-            "get": {
+            "post": {
                 "summary": "Get logged-in user details",
-                "operationId": "cfa8416be53229fdca7706d5bf6c0749",
+                "operationId": "d4a3ce74f7663f76e3f9b39e98ee6d2e",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "query",
+                        "description": "User's token",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success"
@@ -176,6 +187,61 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "operationId": "ad65cbbd4e9f201619eae184a5961a98",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "query",
+                        "description": "User's token",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Display a credential User."
+                    },
+                    "201": {
+                        "description": "Successful operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            }
+        },
+        "/api/refresh": {
+            "post": {
+                "operationId": "f6409cd8d794404a6410b0767432b0f4",
+                "responses": {
+                    "200": {
+                        "description": "Display a credential User."
+                    },
+                    "201": {
+                        "description": "Successful operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
             }
         }
     },
